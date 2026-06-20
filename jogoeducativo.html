@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Informática Educacional</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .question-container {
+            display: none;
+        }
+        .question-container.active {
+            display: block;
+        }
+        .question {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+        .correct { color: #27ae60; }
+        .incorrect { color: #e74c3c; }
+        #score-container {
+            display: none;
+        }
+        #next-btn {
+            margin-top: 20px;
+            background-color: #2ecc71;
+            display: none;
+        }
+        #next-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Quiz de Informática</h1>
+    
+    <div id="quiz-area">
+        <div class="question" id="question-text">Carregando pergunta...</div>
+        <div class="options" id="options-area"></div>
+        <div class="feedback" id="feedback-text"></div>
+        <button id="next-btn" onclick="nextQuestion()">Próxima Pergunta</button>
+    </div>
+
+    <div id="score-container">
+        <h2>Fim do Jogo!</h2>
+        <p style="font-size: 1.2em;">Sua pontuação: <strong id="final-score">0</strong> de <strong id="total-questions">0</strong></p>
+        <button onclick="restartGame()" style="margin-top: 20px;">Jogar Novamente</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "Qual componente é considerado o 'cérebro' do computador?",
+            options: ["Placa de Vídeo", "Disco Rígido (HD)", "Processador (CPU)", "Memória RAM"],
+            answer: 2
+        },
+        {
+            question: "Qual dos itens abaixo é um Sistema Operacional?",
+            options: ["Microsoft Word", "Linux", "Google Chrome", "Adobe Photoshop"],
+            answer: 1
+        },
+        {
+            question: "O que é um 'Hardware'?",
+            options: ["Os programas instalados no PC", "A parte física do computador", "Um vírus de internet", "Um tipo de linguagem de programação"],
+            answer: 1
+        },
+        {
+            question: "Para que serve a Memória RAM?",
+            options: ["Armazenar arquivos permanentemente", "Guardar informações temporárias enquanto o PC está ligado", "Imprimir documentos", "Conectar o computador à internet"],
+            answer: 1
+        },
+        {
+            question: "Qual das opções é um periférico exclusivo de ENTRADA de dados?",
+            options: ["Monitor", "Impressora", "Teclado", "Caixa de Som"],
+            answer: 2
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionText = document.getElementById('question-text');
+    const optionsArea = document.getElementById('options-area');
+    const feedbackText = document.getElementById('feedback-text');
+    const nextBtn = document.getElementById('next-btn');
+    const quizArea = document.getElementById('quiz-area');
+    const scoreContainer = document.getElementById('score-container');
+    const finalScore = document.getElementById('final-score');
+    const totalQuestions = document.getElementById('total-questions');
+
+    function loadQuestion() {
+        feedbackText.textContent = "";
+        nextBtn.style.display = "none";
+        
+        const currentQ = questions[currentQuestionIndex];
+        questionText.textContent = currentQ.question;
+        
+        optionsArea.innerHTML = "";
+        
+        currentQ.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.textContent = option;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsArea.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIndex, selectedButton) {
+        const currentQ = questions[currentQuestionIndex];
+        const buttons = optionsArea.querySelectorAll('button');
+        
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedIndex === currentQ.answer) {
+            selectedButton.style.backgroundColor = "#27ae60";
+            feedbackText.textContent = "Resposta Correta! 🎉";
+            feedbackText.className = "feedback correct";
+            score++;
+        } else {
+            selectedButton.style.backgroundColor = "#e74c3c";
+            buttons[currentQ.answer].style.backgroundColor = "#27ae60";
+            feedbackText.textContent = "Resposta Incorreta! ❌";
+            feedbackText.className = "feedback incorrect";
+        }
+
+        nextBtn.style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showScore();
+        }
+    }
+
+    function showScore() {
+        quizArea.style.display = "none";
+        scoreContainer.style.display = "block";
+        finalScore.textContent = score;
+        totalQuestions.textContent = questions.length;
+    }
+
+    function restartGame() {
+        currentQuestionIndex = 0;
+        score = 0;
+        quizArea.style.display = "block";
+        scoreContainer.style.display = "none";
+        loadQuestion();
+    }
+
+    // Iniciar o jogo
+    loadQuestion();
+</script>
+
+</body>
+</html>
